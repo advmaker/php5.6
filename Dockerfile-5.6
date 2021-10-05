@@ -42,8 +42,7 @@ RUN apt-get update \
         pdo_mysql \	
         pdo_pgsql \	
         mbstring \	
-        soap \
-        igbinary
+        soap
 
  # Possible values for ext-name:	
 # bcmath bz2 calendar ctype curl dba dom enchant exif fileinfo filter ftp gd gettext gmp hash iconv imap interbase intl	
@@ -86,7 +85,9 @@ RUN apt-get update && apt-get install -q -y --no-install-recommends \
 	libxpm-dev \
 	libvpx-dev \
 	ssmtp mailutils \
-	procps
+	procps \
+        libssh2-1-dev \
+        libssl-dev
 
 # https://bugs.php.net/bug.php?id=49876
 RUN ln -fs /usr/lib/x86_64-linux-gnu/libldap.so /usr/lib/
@@ -94,8 +95,8 @@ RUN ln -fs /usr/lib/x86_64-linux-gnu/libldap.so /usr/lib/
 # PHP geoip module + cron
 RUN apt-get install -y --no-install-recommends \
         geoip-bin geoip-database libgeoip-dev cron \
-    && pecl install geoip \
-    && echo "extension=geoip.so" > /usr/local/etc/php/conf.d/ext-geoip.ini \
+    && pecl install geoip igbinary-2.0.1 ssh2-0.13 msgpack-0.5.7\
+    && echo "extension=geoip.so" > /usr/local/etc/php/conf.d/ext-geoip.ini
 
 RUN echo "Installing PHP extensions" \
     && pecl install imagick \
@@ -107,8 +108,25 @@ RUN echo "Installing PHP extensions" \
     --with-png-dir=/usr/lib/x86_64-linux-gnu/ \
     --enable-gd-jis-conv \
     && docker-php-ext-install iconv mcrypt pdo_mysql pdo_pgsql pcntl zip bcmath simplexml xmlrpc soap pspell ldap mbstring mysql mysqli zip sockets bz2 gettext gd \
-    && docker-php-ext-enable  iconv mcrypt pdo_mysql pdo_pgsql pcntl zip bcmath simplexml xmlrpc soap pspell ldap mbstring mysql mysqli zip sockets bz2 gettext imagick gd igbinary \
+    && docker-php-ext-enable  iconv mcrypt pdo_mysql pdo_pgsql pcntl zip bcmath simplexml xmlrpc soap pspell ldap mbstring mysql mysqli zip sockets bz2 gettext imagick gd igbinary ssh2 msgpack \
     && ldconfig
+
+RUN pear install --alldeps \
+        Auth_SASL \
+        Auth_SASL2-beta \
+        Benchmark \
+        pear.php.net/Console_Color2-0.1.2 \
+        Console_Table \
+        HTTP_OAuth-0.3.1 \
+        HTTP_Request2 \
+        Log \
+        Mail \
+        MDB2 \
+        Net_GeoIP \
+        Net_SMTP \
+        Net_Socket \
+        XML_RPC2 \
+        pear.symfony.com/YAML
 
 # install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --filename=composer --install-dir=/bin
